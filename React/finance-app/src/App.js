@@ -26,8 +26,10 @@ const App = () => {
 
     // function to manipulate changes in form fields
     // updates formData with the values ​​of the form fields.
+    // everytime a input box is changed, the function is called
     const handleInputChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        console.log("mudou fml")
         setFormData({
             ...formData,
             [event.target.name]: value,
@@ -36,11 +38,12 @@ const App = () => {
 
     // function to manipulate the form submit 
     // (Prevents the form's default behavior, sends the data to the backend, reloads the transactions and resets the form)
+    // When an HTML form is submitted, the browser's default behavior is to reload the page. This is because the default action of a form is to submit data to a server and load the server's response as a new page
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         await api.post('/transactions/', formData)
-        fetchTransactions();
-        setFormData({
+        fetchTransactions(); // call to get the updated list of transactions from the backend. This ensures that the new transaction is immediately displayed in the user interface after being added.
+        setFormData({ // setFormData is called with an empty object to clear form fields after submission. This prepares the form for the entry of a new transaction.
             amount: '',
             category: '',
             description: '',
