@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from typing import Annotated
+from typing import Annotated, List
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 from database import SessionLocal, engine
@@ -16,6 +16,9 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins = origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # pydantic model that is going to validate the requests from our react application
@@ -38,10 +41,22 @@ def get_db():
     finally:
         db.close()
 
-db_dependecy = Annotated(Session, Depends(get_db))
+db_dependency = Annotated[Session, Depends(get_db)]
 
 # the database is going to create our table and our columns automatically when this fastAPI application is created
 models.Base.metadata.create_all(bind=engine)
 
 @app.post("/transactions/", response_model=TransactionModel)
-async def create_transaction(transaction: TransactionBase, db: db_dependecy)
+async def create_transaction(transaction: TransactionBase, db: db_dependency):
+    # we're going to map all of the variables from our transaction base to our table transaction to save into our sqlite database 
+    db_transaction = models.Transaction(**transaction.model_dump())
+    db.add(db_transaction)
+    db.commit()
+    db.refresh(db_transaction)
+    return db_transaction
+
+@app.get("/transactions/", response_model=List[TransactionModel])
+# here we are adding some query parameters that will allow us to be able to fetch a certain amount of transactions for our application
+async def read_transactions(db: db_dependency, skip: int = 0, limit: int = 100):
+    transactions = db.query(models.Transaction).offset(skip).limit(limit).all()
+    return transactions
