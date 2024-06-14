@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from "react";
 import api from "./api";
 
-// transaction: un state to store the transactions list
-// formData: un state to store the forms data
+// transaction: a state to store the transactions list
+// formData: a state to store the forms data
 const App = () => {
     const [transaction, setTransaction] = useState([]);
     const [formData, setFormData] = useState({
