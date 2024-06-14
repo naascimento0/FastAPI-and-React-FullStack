@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from "react";
 import api from "./api";
 
+// transaction: un state to store the transactions list
+// formData: un state to store the forms data
 const App = () => {
     const [transaction, setTransaction] = useState([]);
     const [formData, setFormData] = useState({
@@ -11,15 +13,19 @@ const App = () => {
         date: ''
     });
 
+    // async function that makes a GET request to obtain transactions and update the transaction state
     const fetchTransactions = async () => {
         const response = await api.get('/transactions/');
         setTransaction(response.data)
     };
 
+    // hook that executes fetchTransactions when the component is first mounted
     useEffect(() => {
         fetchTransactions();
     }, [])
 
+    // function to manipulate changes in form fields
+    // updates formData with the values ​​of the form fields.
     const handleInputChange = (event) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         setFormData({
@@ -28,6 +34,8 @@ const App = () => {
         });
     };
 
+    // function to manipulate the form submit 
+    // (Prevents the form's default behavior, sends the data to the backend, reloads the transactions and resets the form)
     const handleFormSubmit = async (event) => {
         event.preventDefault();
         await api.post('/transactions/', formData)
